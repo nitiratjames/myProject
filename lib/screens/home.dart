@@ -1,4 +1,6 @@
+import 'package:checkpoint/screens/service.dart';
 import 'package:checkpoint/screens/register.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 
@@ -8,6 +10,21 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  @override
+  void initState(){
+    super.initState();
+    checkStatus();
+  }
+
+  Future<void> checkStatus()async{
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    var user = firebaseAuth.currentUser;
+    if(user != null){
+      MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext context) => Service());
+      Navigator.of(context).pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
+    }
+  }
+
   Widget showAppName() {
     return Text(
       'ฮาว่าละ !!!',
