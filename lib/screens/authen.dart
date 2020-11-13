@@ -17,6 +17,7 @@ class _AuthenState extends State<Authen> {
   Widget backButton() {
     return IconButton(
       icon: Icon(Icons.navigate_before),
+      iconSize: 40.0,
       onPressed: () {
         Navigator.of(context).pop();
       },
