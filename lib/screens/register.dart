@@ -1,6 +1,7 @@
-import 'package:checkpoint/screens/service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:checkpoint/screens/service.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class Register extends StatefulWidget {
 class _RegisterState extends State<Register> {
   // variable
   final _formKey = GlobalKey<FormState>();
-  String _name , _email , _password;
+  String _name, _email, _password;
 
   // method
   Widget registerButton() {
@@ -30,20 +31,20 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  Future<void> registerThread()async{
+  Future<void> registerThread() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    await firebaseAuth.createUserWithEmailAndPassword(
-        email: _email, password: _password)
+    await firebaseAuth
+        .createUserWithEmailAndPassword(email: _email, password: _password)
         .then((res) {
-        setupProfile();
-    }).catchError((res){
+      setupProfile();
+    }).catchError((res) {
       String title = res.code;
       String message = res.message;
-      alertMessage(title , message);
+      alertMessage(title, message);
     });
   }
 
-  Future<void> setupProfile()async{
+  Future<void> setupProfile() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = firebaseAuth.currentUser;
     var name, email, uid, emailVerified;
@@ -51,66 +52,62 @@ class _RegisterState extends State<Register> {
       name = user.displayName;
       email = user.email;
       emailVerified = user.emailVerified;
-      uid = user.uid;  // The user's ID, unique to the Firebase project. Do NOT use
+      uid = user.uid; // The user's ID, unique to the Firebase project. Do NOT use
       // this value to authenticate with your backend server, if
       // you have one. Use User.getToken() instead.
       // print(user);
-      MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext context) => Service());
-      Navigator.of(context).pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
+      MaterialPageRoute materialPageRoute =
+          MaterialPageRoute(builder: (BuildContext context) => Service());
+      Navigator.of(context).pushAndRemoveUntil(
+          materialPageRoute, (Route<dynamic> route) => false);
     }
   }
 
-  void alertMessage(String title , String message){
+  void alertMessage(String title, String message) {
     print(message);
-    if(title != null){
-      if(title =='email-already-in-use'){
+    if (title != null) {
+      if (title == 'email-already-in-use') {
         title = 'อีเมลถูกใช้งานแล้ว';
       }
-    }if(message != null){
-      if(message == 'The email address is already in use by another account.'){
+    }
+    if (message != null) {
+      if (message ==
+          'The email address is already in use by another account.') {
         message = 'ที่อยู่อีเมลนี้ถูกใช้โดยบัญชีอื่นแล้ว';
       }
     }
-    _showDialog(title , message);
+    _showDialog(title, message);
   }
 
-
 // user defined function
-  void _showDialog(String title , String message) {
+  void _showDialog(String title, String message) {
     // flutter defined function
     showDialog(
       context: context,
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title:ListTile(
-           leading: Icon(
-             Icons.lock,
-             color: Colors.red,
-             size: 40.0,
-           ),
+          title: ListTile(
+            leading: Icon(
+              Icons.lock,
+              color: Colors.red,
+              size: 35.0,
+            ),
             title: Text(
               title,
-              style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 24.0
-              ),
+              style: TextStyle(color: Colors.red, fontSize: 24.0),
             ),
           ),
           content: new Text(
-              message,
-              style: TextStyle(
-                  fontSize: 18.0
-              ),
+            message,
+            style: TextStyle(fontSize: 18.0),
           ),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             new FlatButton(
               child: new Text(
-                  "ตกลง",
-                style: TextStyle(
-                    fontSize: 18.0
-                ),
+                "ตกลง",
+                style: TextStyle(fontSize: 18.0),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -143,8 +140,8 @@ class _RegisterState extends State<Register> {
           )),
       keyboardType: TextInputType.text,
       validator: (String val) {
-        if (val.length < 6)
-          return 'ชื่อต้องมีความยาวมากกว่า 6 อักขระ';
+        if (val.length < 3)
+          return 'ชื่อต้องมีความยาวมากกว่า 3 อักขระ';
         else
           return null;
       },
@@ -228,46 +225,47 @@ class _RegisterState extends State<Register> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white),
-          title: const Text(
-            'ลงทะเบียน',
-            style: TextStyle(color: Colors.white, fontFamily: 'Kanit'),
-          ),
-          backgroundColor: Colors.pink.shade200,
-          actions: <Widget>[
-            registerButton(),
-          ],
+      appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+        title: const Text(
+          'ลงทะเบียน',
+          style: TextStyle(color: Colors.white, fontFamily: 'Kanit'),
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: const Alignment(-0.5, -0.7),
-              radius: 3.0,
-              colors: <Color>[
-                Colors.white,
-                Colors.pink.shade200,
-              ],
-            ),
+        backgroundColor: Colors.pink.shade200,
+        actions: <Widget>[
+          registerButton(),
+        ],
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(-0.5, -0.7),
+            radius: 3.0,
+            colors: <Color>[
+              Colors.white,
+              Colors.pink.shade200,
+            ],
           ),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.all(20.0),
-              children: <Widget>[
-                nameText(),
-                new SizedBox(
-                  height: 30.0,
-                ),
-                emailText(),
-                new SizedBox(
-                  height: 30.0,
-                ),
-                passwordText(),
-                // imageUpload(),
-              ],
-            ),
+        ),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: <Widget>[
+              nameText(),
+              new SizedBox(
+                height: 30.0,
+              ),
+              emailText(),
+              new SizedBox(
+                height: 30.0,
+              ),
+              passwordText(),
+              // imageUpload(),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

@@ -1,8 +1,10 @@
-import 'package:checkpoint/screens/service.dart';
-import 'package:checkpoint/screens/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
+
+import 'package:checkpoint/screens/service.dart';
+import 'package:checkpoint/screens/register.dart';
+import 'package:checkpoint/screens/authen.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -11,17 +13,19 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   @override
-  void initState(){
+  void initState() {
     super.initState();
     checkStatus();
   }
 
-  Future<void> checkStatus()async{
+  Future<void> checkStatus() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = firebaseAuth.currentUser;
-    if(user != null){
-      MaterialPageRoute materialPageRoute = MaterialPageRoute(builder: (BuildContext context) => Service());
-      Navigator.of(context).pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
+    if (user != null) {
+      MaterialPageRoute materialPageRoute =
+          MaterialPageRoute(builder: (BuildContext context) => Service());
+      Navigator.of(context).pushAndRemoveUntil(
+          materialPageRoute, (Route<dynamic> route) => false);
     }
   }
 
@@ -42,33 +46,24 @@ class _HomeState extends State<Home> {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         SizedBox(width: 0.0, height: 100.0),
-        Text(
-          "SAFE ",
-          style: TextStyle(
-            fontSize: 40.0,
-            fontFamily: 'Architects',
-            // fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(width: 0.0, height: 100.0),
-        RotateAnimatedTextKit(
-            duration: Duration(
-              milliseconds: 2000,
-            ),
+        TypewriterAnimatedTextKit(
             onTap: () {
               print("Tap Event");
             },
             text: [
-              "FIRST",
-              "LIFE",
-              "FREEDOM",
+              "Discipline is the best tool",
+              "Design first, then code",
+              "Do not patch bugs out, rewrite them",
+              "Do not test bugs out, design them out",
             ],
             textStyle: TextStyle(
-              fontSize: 40.0,
+              fontSize: 20.0,
               fontFamily: "Architects",
-              // decoration: TextDecoration.underline,
+              color: Colors.black,
             ),
-            textAlign: TextAlign.start),
+            textAlign: TextAlign.start,
+            alignment: AlignmentDirectional.topStart // or Alignment.topLeft
+            ),
       ],
     );
   }
@@ -87,7 +82,10 @@ class _HomeState extends State<Home> {
       height: 50.0,
       child: RaisedButton.icon(
         onPressed: () {
-          print('Button Clicked.');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Authen()),
+          );
         },
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
