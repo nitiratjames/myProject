@@ -29,18 +29,6 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Widget showAppName() {
-    return Text(
-      'ฮาว่าละ !!!',
-      style: TextStyle(
-        fontSize: 70.0,
-        fontWeight: FontWeight.bold,
-        color: Colors.black87,
-        fontFamily: 'Kanit',
-      ),
-    );
-  }
-
   Widget showAppTitle() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -68,11 +56,41 @@ class _HomeState extends State<Home> {
     );
   }
 
+  Widget showAppName() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        showLogo(),
+        showText(),
+      ],
+    );
+  }
+
   Widget showLogo() {
     return Container(
-      width: 200.0,
-      height: 220.0,
+      width: 52.0,
+      height: 52.0,
       child: Container(child: Image.asset('images/logo.gif')),
+    );
+  }
+
+  Widget showText() {
+    return Text(
+      'มีด่านบอกด้วย !',
+      style: TextStyle(
+        fontSize: 35.0,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+        fontFamily: 'Kanit',
+      ),
+    );
+  }
+
+  Widget showLogoBig() {
+    return Container(
+      width: 280.0,
+      height: 140.0,
+      child: Container(child: Image.asset('images/police_logo.gif')),
     );
   }
 
@@ -182,7 +200,7 @@ class _HomeState extends State<Home> {
                 SizedBox(
                   height: 50.0,
                 ),
-                showLogo(),
+                showLogoBig(),
                 SizedBox(
                   height: 30.0,
                 ),
