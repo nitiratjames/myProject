@@ -14,34 +14,40 @@ class _RegisterState extends State<Register> {
   String _name, _email, _password;
 
   // method
-  Widget registerButton() {
-    return IconButton(
-      icon: Icon(
-        Icons.cloud_upload,
-        color: Colors.white,
-        size: 30.0,
+  showAlertDialog(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      content: new Row(
+        children: [
+          CircularProgressIndicator(),
+          Container(
+              margin: EdgeInsets.only(left: 5), child: Text("กำลังดำเนินการ")),
+        ],
       ),
-      onPressed: () {
-        if (_formKey.currentState.validate()) {
-          _formKey.currentState.save();
-          print('name = $_name email = $_email password = $_password');
-          registerThread();
-        }
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
       },
     );
   }
 
   Future<void> registerThread() async {
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    await firebaseAuth
-        .createUserWithEmailAndPassword(email: _email, password: _password)
-        .then((res) {
-      setupProfile();
-    }).catchError((res) {
-      String title = res.code;
-      String message = res.message;
-      alertMessage(title, message);
-    });
+    try {
+      showAlertDialog(context);
+      FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+      await firebaseAuth
+          .createUserWithEmailAndPassword(email: _email, password: _password)
+          .then((res) {
+        setupProfile();
+      }).catchError((res) {
+        Navigator.pop(context);
+        String title = res.code;
+        String message = res.message;
+        alertMessage(title, message);
+      });
+    } catch (e) {}
   }
 
   Future<void> setupProfile() async {
@@ -52,7 +58,8 @@ class _RegisterState extends State<Register> {
       name = user.displayName;
       email = user.email;
       emailVerified = user.emailVerified;
-      uid = user.uid; // The user's ID, unique to the Firebase project. Do NOT use
+      uid =
+          user.uid; // The user's ID, unique to the Firebase project. Do NOT use
       // this value to authenticate with your backend server, if
       // you have one. Use User.getToken() instead.
       // print(user);
@@ -232,9 +239,6 @@ class _RegisterState extends State<Register> {
           style: TextStyle(color: Colors.white, fontFamily: 'Kanit'),
         ),
         backgroundColor: Colors.pink.shade200,
-        actions: <Widget>[
-          registerButton(),
-        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -265,6 +269,24 @@ class _RegisterState extends State<Register> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          if (_formKey.currentState.validate()) {
+            _formKey.currentState.save();
+            registerThread();
+          }
+        },
+        label: Text(
+          'ลงทะเบียน',
+          style: TextStyle(
+            fontSize: 20.0,
+            color: Colors.white,
+            fontFamily: 'Kanit',
+          ),
+        ),
+        icon: Icon(Icons.cloud_upload),
+        backgroundColor: Colors.blue,
       ),
     );
   }

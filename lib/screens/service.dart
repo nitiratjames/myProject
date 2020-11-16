@@ -9,7 +9,6 @@ class Service extends StatefulWidget {
 }
 
 class _ServiceState extends State<Service> {
-
   Future<void> processingSignOut() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     await firebaseAuth.signOut().then((res) {

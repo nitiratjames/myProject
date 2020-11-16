@@ -19,19 +19,22 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> checkStatus() async {
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    var user = firebaseAuth.currentUser;
-    if (user != null) {
-      MaterialPageRoute materialPageRoute =
-          MaterialPageRoute(builder: (BuildContext context) => Service());
-      Navigator.of(context).pushAndRemoveUntil(
-          materialPageRoute, (Route<dynamic> route) => false);
-    }
+    FirebaseAuth.instance.authStateChanges().listen((User user) {
+      if (user == null) {
+        print('User is currently signed out!');
+      } else {
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext context) => Service());
+        Navigator.of(context).pushAndRemoveUntil(
+            materialPageRoute, (Route<dynamic> route) => false);
+      }
+    });
   }
 
   Widget showAppTitle() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: 10.0,
+      // mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         SizedBox(width: 0.0, height: 100.0),
         TypewriterAnimatedTextKit(
@@ -41,8 +44,8 @@ class _HomeState extends State<Home> {
             text: [
               "Discipline is the best tool",
               "Design first, then code",
-              "Do not patch bugs out, rewrite them",
-              "Do not test bugs out, design them out",
+              "Do not patch bugs out",
+              "Do not test bugs out",
             ],
             textStyle: TextStyle(
               fontSize: 20.0,
@@ -197,10 +200,10 @@ class _HomeState extends State<Home> {
                   height: 100.0,
                 ),
                 showAppTitle(),
-                SizedBox(
-                  height: 50.0,
-                ),
-                showLogoBig(),
+                // SizedBox(
+                //   height: 50.0,
+                // ),
+                // showLogoBig(),
                 SizedBox(
                   height: 30.0,
                 ),

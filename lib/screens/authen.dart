@@ -241,22 +241,44 @@ class _AuthenState extends State<Authen> {
     );
   }
 
+  showLoadingDialog(BuildContext context){
+    AlertDialog alert = AlertDialog(
+      content: new Row(
+        children: [
+          CircularProgressIndicator(),
+          Container(margin: EdgeInsets.only(left: 5),child:Text("กำลังดำเนินการ" )),
+        ],),
+    );
+    showDialog(barrierDismissible: false,
+      context:context,
+      builder:(BuildContext context){
+        return alert;
+      },
+    );
+  }
+
   Future<void> checkAuthen() async {
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    await firebaseAuth
-        .signInWithEmailAndPassword(email: _email, password: _password)
-        .then((res) {
-      print('auth');
-      MaterialPageRoute materialPageRoute =
-      MaterialPageRoute(builder: (BuildContext context) => Service());
-      Navigator.of(context).pushAndRemoveUntil(
-          materialPageRoute, (Route<dynamic> route) => false);
-    }).catchError((res){
-      print(res);
-      String title = res.code;
-      String message = res.message;
-      alertMessage(title, message);
-    });
+    try{
+      showLoadingDialog(context);
+      FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+      await firebaseAuth
+          .signInWithEmailAndPassword(email: _email, password: _password)
+          .then((res) {
+        print('auth');
+        MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext context) => Service());
+        Navigator.of(context).pushAndRemoveUntil(
+            materialPageRoute, (Route<dynamic> route) => false);
+      }).catchError((res){
+        Navigator.pop(context);
+        print(res);
+        String title = res.code;
+        String message = res.message;
+        alertMessage(title, message);
+      });
+    }catch(e){
+
+    }
   }
 
   @override
