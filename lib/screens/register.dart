@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
 import 'package:checkpoint/screens/service.dart';
+
 
 class Register extends StatefulWidget {
   @override
@@ -53,16 +55,9 @@ class _RegisterState extends State<Register> {
   Future<void> setupProfile() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = firebaseAuth.currentUser;
-    var name, email, uid, emailVerified;
     if (user != null) {
-      name = user.displayName;
-      email = user.email;
-      emailVerified = user.emailVerified;
-      uid =
-          user.uid; // The user's ID, unique to the Firebase project. Do NOT use
-      // this value to authenticate with your backend server, if
-      // you have one. Use User.getToken() instead.
-      // print(user);
+      await FirebaseAuth.instance.currentUser.updateProfile(displayName:_name);
+      print(user.displayName);
       MaterialPageRoute materialPageRoute =
           MaterialPageRoute(builder: (BuildContext context) => Service());
       Navigator.of(context).pushAndRemoveUntil(
@@ -231,6 +226,10 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),

@@ -1,3 +1,5 @@
+import 'package:checkpoint/screens/widgets/show_service.dart';
+import 'package:checkpoint/screens/widgets/add_checkpoint.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -9,6 +11,23 @@ class Service extends StatefulWidget {
 }
 
 class _ServiceState extends State<Service> {
+  String login;
+
+  Widget currentWidget = ShowService();
+  @override
+  void initState() {
+    super.initState();
+    findUser();
+  }
+
+  Future<void> findUser() async {
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    var user = await firebaseAuth.currentUser;
+    setState(() {
+      login = user.displayName;
+    });
+  }
+
   Future<void> processingSignOut() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     await firebaseAuth.signOut().then((res) {
@@ -19,6 +38,138 @@ class _ServiceState extends State<Service> {
     });
   }
 
+  Widget showLogo() {
+    return Container(
+      width: 52.0,
+      height: 52.0,
+      child: Container(child: Image.asset('images/logo.gif')),
+    );
+  }
+
+  Widget showLogin() {
+    return Text(
+      'Login by ${login}',
+      style: TextStyle(
+        fontFamily: 'Kanit',
+      ),
+    );
+  }
+
+  Widget showText() {
+    return Text(
+      'มีด่านบอกด้วย !',
+      style: TextStyle(
+        fontSize: 35.0,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
+        fontFamily: 'Kanit',
+      ),
+    );
+  }
+
+  Widget showAppName() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        showLogo(),
+        showText(),
+      ],
+    );
+  }
+
+  Widget showService() {
+    return ListTile(
+      leading: Icon(
+        Icons.list,
+        size: 35.0,
+      ),
+      title: Text(
+        'หน้าหลัก',
+        style: TextStyle(
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          fontFamily: 'Kanit',
+        ),
+      ),
+      subtitle: Text(
+        'ดูข้อมูล Google Maps',
+        style: TextStyle(
+          fontFamily: 'Kanit',
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          currentWidget = ShowService();
+        });
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  Widget showAddCheckpoint() {
+    return ListTile(
+      leading: Icon(
+        Icons.playlist_add,
+        size: 35.0,
+      ),
+      title: Text(
+        'แจ้งด่านตรวจ',
+        style: TextStyle(
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          fontFamily: 'Kanit',
+        ),
+      ),
+      subtitle: Text(
+        'เพิ่มข้อมูลเบื่องต้น',
+        style: TextStyle(
+          fontFamily: 'Kanit',
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          currentWidget = AddCheckPoint();
+        });
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  Widget showHead() {
+    return DrawerHeader(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: const Alignment(-0.5, -0.7),
+          radius: 2.0,
+          colors: <Color>[
+            Colors.white,
+            Colors.pink.shade200,
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          showAppName(),
+          showLogin(),
+        ],
+      ),
+    );
+  }
+
+  Widget showDrawer() {
+    return Drawer(
+      child: ListView(
+        children: [
+          showHead(),
+          showService(),
+          showAddCheckpoint(),
+        ],
+      ),
+    );
+  }
+
   Widget signOutButton() {
     return IconButton(
       icon: Icon(
@@ -26,6 +177,7 @@ class _ServiceState extends State<Service> {
         color: Colors.white,
         size: 30.0,
       ),
+      tooltip: "ออกจากระบบ",
       onPressed: () {
         _showDialog();
       },
@@ -99,18 +251,20 @@ class _ServiceState extends State<Service> {
           signOutButton(),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: const Alignment(-0.5, -0.7),
-            radius: 3.0,
-            colors: <Color>[
-              Colors.white,
-              Colors.pink.shade200,
-            ],
-          ),
-        ),
-      ),
+      body: currentWidget,
+      drawer: showDrawer(),
+      // Container(
+      //   decoration: BoxDecoration(
+      //     gradient: RadialGradient(
+      //       center: const Alignment(-0.5, -0.7),
+      //       radius: 3.0,
+      //       colors: <Color>[
+      //         Colors.white,
+      //         Colors.pink.shade200,
+      //       ],
+      //     ),
+      //   ),
+      // ),
     );
   }
 }
