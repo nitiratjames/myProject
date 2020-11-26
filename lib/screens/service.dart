@@ -1,6 +1,7 @@
 import 'package:checkpoint/screens/widgets/show_service.dart';
 import 'package:checkpoint/screens/widgets/add_checkpoint.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:checkpoint/screens/home.dart';
@@ -12,6 +13,7 @@ class Service extends StatefulWidget {
 
 class _ServiceState extends State<Service> {
   String login;
+  String userRole;
 
   Widget currentWidget = ShowService();
   @override
@@ -48,7 +50,7 @@ class _ServiceState extends State<Service> {
 
   Widget showLogin() {
     return Text(
-      'Login by ${login}',
+      'Login by $login',
       style: TextStyle(
         fontFamily: 'Kanit',
       ),

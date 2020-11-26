@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -57,12 +58,23 @@ class _RegisterState extends State<Register> {
     var user = firebaseAuth.currentUser;
     if (user != null) {
       await FirebaseAuth.instance.currentUser.updateProfile(displayName:_name);
+      userSetup('USER');
       print(user.displayName);
       MaterialPageRoute materialPageRoute =
           MaterialPageRoute(builder: (BuildContext context) => Service());
       Navigator.of(context).pushAndRemoveUntil(
           materialPageRoute, (Route<dynamic> route) => false);
     }
+  }
+
+  Future<void> userSetup(String userRole) async{
+    CollectionReference users = FirebaseFirestore.instance.collection('Users');
+    FirebaseAuth auth = FirebaseAuth.instance;
+    String uid = auth.currentUser.uid.toString();
+    users.add({
+      'role':userRole,
+      'uid':uid
+    });
   }
 
   void alertMessage(String title, String message) {
