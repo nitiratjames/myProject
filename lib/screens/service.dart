@@ -25,8 +25,14 @@ class _ServiceState extends State<Service> {
   Future<void> findUser() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = await firebaseAuth.currentUser;
-    setState(() {
-      login = user.displayName;
+    final DocumentReference document =   Firestore.instance.collection("users").doc(user.uid);
+    await document.get().then<dynamic>(( DocumentSnapshot snapshot) async{
+      setState(() {
+        login = user.displayName;
+        userRole = snapshot.data()['role'];
+        print( login );
+        print( userRole );
+      });
     });
   }
 
@@ -49,11 +55,21 @@ class _ServiceState extends State<Service> {
   }
 
   Widget showLogin() {
-    return Text(
-      'Login by $login',
-      style: TextStyle(
-        fontFamily: 'Kanit',
-      ),
+    return Column(
+      children: [
+        Text(
+          'Login by ${login}',
+          style: TextStyle(
+            fontFamily: 'Kanit',
+          ),
+        ),
+        Text(
+          'Role : ${userRole}',
+          style: TextStyle(
+            fontFamily: 'Kanit',
+          ),
+        ),
+      ],
     );
   }
 

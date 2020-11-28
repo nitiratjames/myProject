@@ -1,3 +1,4 @@
+import 'package:checkpoint/screens/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +16,6 @@ class _RegisterState extends State<Register> {
   // variable
   final _formKey = GlobalKey<FormState>();
   String _name, _email, _password;
-
   // method
   showAlertDialog(BuildContext context) {
     AlertDialog alert = AlertDialog(
@@ -68,12 +68,11 @@ class _RegisterState extends State<Register> {
   }
 
   Future<void> userSetup(String userRole) async{
-    CollectionReference users = FirebaseFirestore.instance.collection('Users');
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
     FirebaseAuth auth = FirebaseAuth.instance;
     String uid = auth.currentUser.uid.toString();
-    users.add({
+    users.doc(uid).set({
       'role':userRole,
-      'uid':uid
     });
   }
 
