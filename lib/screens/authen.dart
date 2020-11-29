@@ -68,7 +68,7 @@ class _AuthenState extends State<Authen> {
 
   Widget showText() {
     return Text(
-      'มีด่านบอกด้วย !',
+      'มีด่านบอกด้วย',
       style: TextStyle(
         fontSize: 35.0,
         fontWeight: FontWeight.bold,

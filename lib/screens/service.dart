@@ -12,26 +12,35 @@ class Service extends StatefulWidget {
 }
 
 class _ServiceState extends State<Service> {
-  String login;
-  String userRole;
-
+  String login, userRole;
+  String currentPage = 'หน้าหลัก';
   Widget currentWidget = ShowService();
+
   @override
   void initState() {
     super.initState();
     findUser();
   }
 
+  Future<bool> checkUser()async{
+    if(login != null && userRole != null){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
   Future<void> findUser() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = await firebaseAuth.currentUser;
-    final DocumentReference document =   Firestore.instance.collection("users").doc(user.uid);
-    await document.get().then<dynamic>(( DocumentSnapshot snapshot) async{
+    final DocumentReference document =
+        Firestore.instance.collection("users").doc(user.uid);
+    await document.get().then<dynamic>((DocumentSnapshot snapshot) async {
       setState(() {
         login = user.displayName;
         userRole = snapshot.data()['role'];
-        print( login );
-        print( userRole );
+        print(login);
+        print(userRole);
       });
     });
   }
@@ -55,27 +64,39 @@ class _ServiceState extends State<Service> {
   }
 
   Widget showLogin() {
-    return Column(
-      children: [
-        Text(
-          'Login by ${login}',
-          style: TextStyle(
-            fontFamily: 'Kanit',
-          ),
-        ),
-        Text(
-          'Role : ${userRole}',
-          style: TextStyle(
-            fontFamily: 'Kanit',
-          ),
-        ),
-      ],
+    return  FutureBuilder(
+      future: checkUser(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        print(snapshot.hasData);
+        if (snapshot.hasData) {
+          return  Column(
+            children: [
+              Text(
+                'Login by ${login}',
+                style: TextStyle(
+                  fontFamily: 'Kanit',
+                ),
+              ),
+              Text(
+                'Role : ${userRole}',
+                style: TextStyle(
+                  fontFamily: 'Kanit',
+                ),
+              ),
+            ],
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
     );
   }
 
   Widget showText() {
     return Text(
-      'มีด่านบอกด้วย !',
+      'มีด่านบอกด้วย',
       style: TextStyle(
         fontSize: 35.0,
         fontWeight: FontWeight.bold,
@@ -118,6 +139,7 @@ class _ServiceState extends State<Service> {
       ),
       onTap: () {
         setState(() {
+          currentPage = 'หน้าหลัก';
           currentWidget = ShowService();
         });
         Navigator.of(context).pop();
@@ -148,6 +170,7 @@ class _ServiceState extends State<Service> {
       ),
       onTap: () {
         setState(() {
+          currentPage = 'แจ้งด่านตรวจ';
           currentWidget = AddCheckPoint();
         });
         Navigator.of(context).pop();
@@ -260,8 +283,8 @@ class _ServiceState extends State<Service> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
-        title: const Text(
-          'หน้าหลัก',
+        title: Text(
+          '$currentPage',
           style: TextStyle(color: Colors.white, fontFamily: 'Kanit'),
         ),
         backgroundColor: Colors.pink.shade200,

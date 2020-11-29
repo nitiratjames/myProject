@@ -64,6 +64,7 @@ class _ShowServiceState extends State<ShowService> {
         label: Text('ตำแหน่งของคุณ'),
         icon: Icon(Icons.near_me),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
