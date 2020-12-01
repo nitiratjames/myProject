@@ -58,8 +58,7 @@ class _RegisterState extends State<Register> {
     var user = firebaseAuth.currentUser;
     if (user != null) {
       await FirebaseAuth.instance.currentUser.updateProfile(displayName:_name);
-      userSetup('USER');
-      print(user.displayName);
+      userSetup();
       MaterialPageRoute materialPageRoute =
           MaterialPageRoute(builder: (BuildContext context) => Service());
       Navigator.of(context).pushAndRemoveUntil(
@@ -67,13 +66,20 @@ class _RegisterState extends State<Register> {
     }
   }
 
-  Future<void> userSetup(String userRole) async{
+  Future<void> userSetup() async{
     CollectionReference users = FirebaseFirestore.instance.collection('users');
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     FirebaseAuth auth = FirebaseAuth.instance;
+    var user = firebaseAuth.currentUser;
     String uid = auth.currentUser.uid.toString();
     users.doc(uid).set({
-      'role':userRole,
+      'username':user.displayName,
+      'email':user.email,
+      'createdOn':FieldValue.serverTimestamp(),
+      'role':'USER',
+      'isActive':false,
     });
+    print(user);
   }
 
   void alertMessage(String title, String message) {

@@ -1,10 +1,16 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:checkpoint/screens/service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+
 
 class AddCheckPoint extends StatefulWidget {
   @override
@@ -13,7 +19,9 @@ class AddCheckPoint extends StatefulWidget {
 
 class _AddCheckPointState extends State<AddCheckPoint> {
   File _image;
+  String imageUrl;
   double lat, lng;
+  String namePoint;
 
   @override
   void initState() {
@@ -25,7 +33,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
     Location location = Location();
     try {
       return location.getLocation();
-    }catch (e) {
+    } catch (e) {
       if (e.code == 'PERMISSION_DENIED') {
         // Permission denied
       }
@@ -43,6 +51,14 @@ class _AddCheckPointState extends State<AddCheckPoint> {
   Set<Marker> myMarker() {
     return <Marker>[
       Marker(
+        onTap: () {
+          print('Tapped');
+        },
+        onDragEnd: ((newPosition) {
+          lat = newPosition.latitude;
+          lng = newPosition.longitude;
+        }),
+        draggable: true,
         markerId: MarkerId('myMap'),
         position: LatLng(lat, lng),
       )
@@ -120,6 +136,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
           Container(
             width: 400.0,
             child: TextField(
+              onChanged: (value) => namePoint = value.trim(),
               decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: 'ชื่อบริเวณ',
@@ -173,6 +190,93 @@ class _AddCheckPointState extends State<AddCheckPoint> {
     );
   }
 
+  void _showDialog(String title) {
+    // flutter defined function
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: ListTile(
+            leading: Icon(
+              Icons.assignment,
+              color: Colors.red,
+              size: 35.0,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 16.0,
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            new FlatButton(
+              child: new Text(
+                "ตกลง",
+                style: TextStyle(fontSize: 18.0),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  uploadImage() async {
+    final _storage = FirebaseStorage.instance;
+    //Check Permissions
+    await Permission.photos.request();
+
+    var permissionStatus = await Permission.photos.status;
+
+    if (permissionStatus.isGranted){
+      var file = File(_image.path);
+      if (_image != null){
+        //Upload to Firebase
+        var snapshot = await _storage.ref()
+            .child('images/checkpoint_${lat}_${lng}')
+            .putFile(file);
+        var downloadUrl = await snapshot.ref.getDownloadURL();
+        setState(() {
+          imageUrl = downloadUrl;
+        });
+        addCheckpoint();
+      } else {
+        print('No Path Received');
+      }
+    } else {
+      print('Grant Permissions and try again');
+    }
+
+  }
+
+  Future<void> addCheckpoint() async{
+    CollectionReference checkpoints = FirebaseFirestore.instance.collection('checkpoints');
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    FirebaseAuth auth = FirebaseAuth.instance;
+    String uid = auth.currentUser.uid.toString();
+    checkpoints.doc().set({
+      'namePoint':namePoint,
+      'imageUrl':imageUrl,
+      'lat':lat,
+      'lng':lng,
+      'createdOn':FieldValue.serverTimestamp(),
+      'createdBy':uid,
+      'isActive':true,
+    });
+
+    MaterialPageRoute materialPageRoute =
+    MaterialPageRoute(builder: (BuildContext context) => Service());
+    Navigator.of(context).pushAndRemoveUntil(
+        materialPageRoute, (Route<dynamic> route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,7 +298,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
               future: _goToMe(),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 print(snapshot.hasData);
-                if (snapshot.hasData) {
+                if (snapshot.hasData == true) {
                   return showMap();
                 } else {
                   return Center(
@@ -210,7 +314,21 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToMe,
+        onPressed: () {
+          if (namePoint == null ) {
+            print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
+            _showDialog('กรุณากรอกข้อมูลให้ครบถ้วน');
+          }else if(_image == null){
+            print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
+            _showDialog('กรุณาเลือกรูปภาพ');
+          }else if((lat == null || lng == null)){
+            print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
+            _showDialog('กรุณาปักหมุด');
+          }
+          else {
+            uploadImage();
+          }
+        },
         label: Text(
           'แจ้งเลย',
           style: TextStyle(

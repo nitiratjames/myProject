@@ -1,9 +1,9 @@
 import 'package:checkpoint/screens/widgets/show_service.dart';
 import 'package:checkpoint/screens/widgets/add_checkpoint.dart';
+import 'package:checkpoint/screens/widgets/user_manage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:checkpoint/screens/home.dart';
 
 class Service extends StatefulWidget {
@@ -12,7 +12,7 @@ class Service extends StatefulWidget {
 }
 
 class _ServiceState extends State<Service> {
-  String login, userRole;
+  String login = null, userRole = null;
   String currentPage = 'หน้าหลัก';
   Widget currentWidget = ShowService();
 
@@ -68,7 +68,7 @@ class _ServiceState extends State<Service> {
       future: checkUser(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         print(snapshot.hasData);
-        if (snapshot.hasData) {
+        if (snapshot.hasData == true) {
           return  Column(
             children: [
               Text(
@@ -150,7 +150,7 @@ class _ServiceState extends State<Service> {
   Widget showAddCheckpoint() {
     return ListTile(
       leading: Icon(
-        Icons.playlist_add,
+        Icons.room,
         size: 35.0,
       ),
       title: Text(
@@ -172,6 +172,37 @@ class _ServiceState extends State<Service> {
         setState(() {
           currentPage = 'แจ้งด่านตรวจ';
           currentWidget = AddCheckPoint();
+        });
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
+  Widget userManage() {
+    return ListTile(
+      leading: Icon(
+        Icons.account_circle,
+        size: 35.0,
+      ),
+      title: Text(
+        'จัดการผู้ใช้',
+        style: TextStyle(
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          fontFamily: 'Kanit',
+        ),
+      ),
+      subtitle: Text(
+        'เพิ่มข้อมูลเบื่องต้น',
+        style: TextStyle(
+          fontFamily: 'Kanit',
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          currentPage = 'จัดการผู้ใช้';
+          currentWidget = UserManage();
         });
         Navigator.of(context).pop();
       },
@@ -206,6 +237,8 @@ class _ServiceState extends State<Service> {
           showHead(),
           showService(),
           showAddCheckpoint(),
+          userRole != 'ADMIN' ? Container(): userManage()
+          // userManage(),
         ],
       ),
     );
