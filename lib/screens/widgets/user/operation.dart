@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 Future<void> uploadingData(String _productName, String _productPrice,
     String _imageUrl, bool _isFavourite) async {

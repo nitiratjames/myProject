@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 class ShowService extends StatefulWidget {
   @override
@@ -10,19 +12,59 @@ class ShowService extends StatefulWidget {
 }
 
 class _ShowServiceState extends State<ShowService> {
+  GoogleMapController controller;
   Completer<GoogleMapController> _controller = Completer();
   LocationData currentLocation;
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  BitmapDescriptor mapMarker;
 
-  // static final CameraPosition _kGooglePlex = CameraPosition(
-  //   target: LatLng(18.7850863, 98.9365153),
-  //   zoom: 14.4746,
-  // );
+  void initMarker(specify, specifyId) async {
+    var markerIdVal = specifyId;
+    final MarkerId markerId = MarkerId(markerIdVal);
+    final Marker marker = Marker(
+      markerId: markerId,
+      position: LatLng(specify['lat'], specify['lng']),
+      icon: mapMarker,
+      onTap: () {
+        _onMarkerTapped(specify);
+      },
+      // infoWindow: InfoWindow(
+      //   title: specify['namePoint'],
+      //   snippet: '12:50:0',
+      //   onTap: (){
+      //     _showDetail('a');
+      //   }
+      // ),
+    );
+    setState(() {
+      markers[markerId] = marker;
+    });
+  }
 
-  // static final CameraPosition _kLake = CameraPosition(
-  //     bearing: 192.8334901395799,
-  //     target: LatLng(18.7850863, 98.9365153),
-  //     tilt: 59.440717697143555,
-  //     zoom: 19.151926040649414);
+  getMarkerData() async {
+    FirebaseFirestore.instance
+        .collection('checkpoints')
+        .get()
+        .then((myMockDoc) {
+      if (myMockDoc.docs.isNotEmpty) {
+        for (int i = 0; i < myMockDoc.docs.length; i++) {
+          initMarker(myMockDoc.docs[i].data(), myMockDoc.docs[i].id);
+        }
+      }
+    });
+  }
+
+  void setCustomMarkers() async {
+    mapMarker = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(), 'images/marker.png');
+  }
+
+  @override
+  void initState() {
+    setCustomMarkers();
+    getMarkerData();
+    super.initState();
+  }
 
   Future<LocationData> getCurrentLocation() async {
     Location location = Location();
@@ -45,11 +87,103 @@ class _ShowServiceState extends State<ShowService> {
     )));
   }
 
+  void _onMarkerTapped(specify) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          child: Container(
+            height: 500,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(specify['imageUrl']),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    color: Colors.white,
+                    child: SizedBox.expand(
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            RaisedButton.icon(
+                              onPressed: () {
+                                // print('Button Clicked.');
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0))),
+                              label: Text(
+                                'สร้างโดย : ADMIN',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Kanit',
+                                ),
+                              ),
+                              icon: Icon(
+                                Icons.account_circle,
+                                color: Colors.white,
+                              ),
+                              textColor: Colors.white,
+                              splashColor: Colors.red,
+                              color: Colors.lightGreen,
+                            ),
+                            Text(
+                              'บริเวณ : ${specify['namePoint']}',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Kanit',
+                              ),
+                              // textAlign: TextAlign.left,
+                            ),
+                            Text(
+                              'เวลา : ${new DateFormat("dd-MM-yyyy hh:mm").format(specify['createdOn'].toDate())}',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Kanit',
+                              ),
+                              // textAlign: TextAlign.center,
+                            ),
+                            FloatingActionButton.extended(
+                              onPressed: () => {Navigator.of(context).pop()},
+                              label: Text('ปิด'),
+                              icon: Icon(Icons.clear),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       body: GoogleMap(
         myLocationEnabled: true,
+        markers: Set<Marker>.of(markers.values),
         mapType: MapType.terrain,
         initialCameraPosition: CameraPosition(
           target: LatLng(18.7768121, 98.9860395),
@@ -67,9 +201,4 @@ class _ShowServiceState extends State<ShowService> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
-
-// Future<void> _goToTheLake() async {
-//   final GoogleMapController controller = await _controller.future;
-//   controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-// }
 }
