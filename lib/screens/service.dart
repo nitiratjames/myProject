@@ -18,8 +18,8 @@ class _ServiceState extends State<Service> {
 
   @override
   void initState() {
-    super.initState();
     findUser();
+    super.initState();
   }
 
   Future<bool> checkUser()async{

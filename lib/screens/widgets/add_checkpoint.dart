@@ -85,7 +85,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
 
   _imgFromCamera() async {
     File image = await ImagePicker.pickImage(
-        source: ImageSource.camera, imageQuality: 50);
+        source: ImageSource.camera, imageQuality: 15);
     setState(() {
       _image = image;
     });
@@ -93,8 +93,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
 
   _imgFromGallery() async {
     File image = await ImagePicker.pickImage(
-        source: ImageSource.gallery, imageQuality: 50);
-
+        source: ImageSource.gallery, imageQuality: 15);
     setState(() {
       _image = image;
     });
@@ -134,7 +133,8 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 400.0,
+            width: 300.0,
+            padding: const EdgeInsets.all(5.0),
             child: TextField(
               onChanged: (value) => namePoint = value.trim(),
               decoration: InputDecoration(
@@ -268,6 +268,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
       'lng':lng,
       'createdOn':FieldValue.serverTimestamp(),
       'createdBy':uid,
+      'createdName':auth.currentUser.displayName,
       'isActive':true,
     });
 
@@ -275,6 +276,22 @@ class _AddCheckPointState extends State<AddCheckPoint> {
     MaterialPageRoute(builder: (BuildContext context) => Service());
     Navigator.of(context).pushAndRemoveUntil(
         materialPageRoute, (Route<dynamic> route) => false);
+  }
+
+  showLoadingDialog(BuildContext context){
+    AlertDialog alert = AlertDialog(
+      content: new Row(
+        children: [
+          CircularProgressIndicator(),
+          Container(margin: EdgeInsets.only(left: 5),child:Text("กำลังดำเนินการ" )),
+        ],),
+    );
+    showDialog(barrierDismissible: false,
+      context:context,
+      builder:(BuildContext context){
+        return alert;
+      },
+    );
   }
 
   @override
@@ -326,7 +343,12 @@ class _AddCheckPointState extends State<AddCheckPoint> {
             _showDialog('กรุณาปักหมุด');
           }
           else {
-            uploadImage();
+            try{
+              showLoadingDialog(context);
+              uploadImage();
+            }catch(e){
+
+            }
           }
         },
         label: Text(

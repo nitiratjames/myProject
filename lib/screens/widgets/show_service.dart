@@ -59,10 +59,20 @@ class _ShowServiceState extends State<ShowService> {
         ImageConfiguration(), 'images/marker.png');
   }
 
+  setUpTimedFetch() {
+    Timer.periodic(Duration(minutes: 1), (timer) {
+      setState(() {
+        getMarkerData();
+        print('Get markers');
+      });
+    });
+  }
+
   @override
   void initState() {
     setCustomMarkers();
     getMarkerData();
+    setUpTimedFetch();
     super.initState();
   }
 
@@ -100,11 +110,21 @@ class _ShowServiceState extends State<ShowService> {
               children: [
                 Expanded(
                   child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(specify['imageUrl']),
-                        fit: BoxFit.cover,
-                      ),
+                    padding: EdgeInsets.all(10.0),
+                    child: Image.network(
+                      specify['imageUrl'],
+                      loadingBuilder: (BuildContext context, Widget child,
+                          ImageChunkEvent loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes
+                                : null,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -119,13 +139,12 @@ class _ShowServiceState extends State<ShowService> {
                           children: [
                             RaisedButton.icon(
                               onPressed: () {
-                                // print('Button Clicked.');
                               },
                               shape: RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(5.0))),
                               label: Text(
-                                'สร้างโดย : ADMIN',
+                                'สร้างโดย : ${specify['createdName']}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontFamily: 'Kanit',
