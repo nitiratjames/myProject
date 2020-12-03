@@ -11,7 +11,6 @@ import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
-
 class AddCheckPoint extends StatefulWidget {
   @override
   _AddCheckPointState createState() => _AddCheckPointState();
@@ -22,6 +21,8 @@ class _AddCheckPointState extends State<AddCheckPoint> {
   String imageUrl;
   double lat, lng;
   String namePoint;
+
+  Completer<GoogleMapController> _controller = Completer();
 
   @override
   void initState() {
@@ -129,11 +130,12 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         });
   }
 
-  Widget nameForm() => Row(
+  Widget nameForm() =>
+      Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 300.0,
+            width: 400.0,
             padding: const EdgeInsets.all(5.0),
             child: TextField(
               onChanged: (value) => namePoint = value.trim(),
@@ -168,24 +170,24 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         },
         child: _image != null
             ? ClipRRect(
-                child: Image.file(
-                  _image,
-                  width: 400,
-                  height: 300,
-                  fit: BoxFit.fitWidth,
-                ),
-              )
+          child: Image.file(
+            _image,
+            width: 400,
+            height: 300,
+            fit: BoxFit.fitWidth,
+          ),
+        )
             : Container(
-                decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(50)),
-                width: 100,
-                height: 100,
-                child: Icon(
-                  Icons.camera_alt,
-                  color: Colors.grey[800],
-                ),
-              ),
+          decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(50)),
+          width: 100,
+          height: 100,
+          child: Icon(
+            Icons.camera_alt,
+            color: Colors.grey[800],
+          ),
+        ),
       ),
     );
   }
@@ -235,11 +237,12 @@ class _AddCheckPointState extends State<AddCheckPoint> {
 
     var permissionStatus = await Permission.photos.status;
 
-    if (permissionStatus.isGranted){
+    if (permissionStatus.isGranted) {
       var file = File(_image.path);
-      if (_image != null){
+      if (_image != null) {
         //Upload to Firebase
-        var snapshot = await _storage.ref()
+        var snapshot = await _storage
+            .ref()
             .child('images/checkpoint_${lat}_${lng}')
             .putFile(file);
         var downloadUrl = await snapshot.ref.getDownloadURL();
@@ -253,42 +256,45 @@ class _AddCheckPointState extends State<AddCheckPoint> {
     } else {
       print('Grant Permissions and try again');
     }
-
   }
 
-  Future<void> addCheckpoint() async{
-    CollectionReference checkpoints = FirebaseFirestore.instance.collection('checkpoints');
+  Future<void> addCheckpoint() async {
+    CollectionReference checkpoints =
+    FirebaseFirestore.instance.collection('checkpoints');
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     FirebaseAuth auth = FirebaseAuth.instance;
     String uid = auth.currentUser.uid.toString();
     checkpoints.doc().set({
-      'namePoint':namePoint,
-      'imageUrl':imageUrl,
-      'lat':lat,
-      'lng':lng,
-      'createdOn':FieldValue.serverTimestamp(),
-      'createdBy':uid,
-      'createdName':auth.currentUser.displayName,
-      'isActive':true,
+      'namePoint': namePoint,
+      'imageUrl': imageUrl,
+      'lat': lat,
+      'lng': lng,
+      'createdOn': FieldValue.serverTimestamp(),
+      'createdBy': uid,
+      'createdName': auth.currentUser.displayName,
+      'isActive': true,
     });
 
     MaterialPageRoute materialPageRoute =
     MaterialPageRoute(builder: (BuildContext context) => Service());
-    Navigator.of(context).pushAndRemoveUntil(
-        materialPageRoute, (Route<dynamic> route) => false);
+    Navigator.of(context)
+        .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
   }
 
-  showLoadingDialog(BuildContext context){
+  showLoadingDialog(BuildContext context) {
     AlertDialog alert = AlertDialog(
       content: new Row(
         children: [
           CircularProgressIndicator(),
-          Container(margin: EdgeInsets.only(left: 5),child:Text("กำลังดำเนินการ" )),
-        ],),
+          Container(
+              margin: EdgeInsets.only(left: 5), child: Text("กำลังดำเนินการ")),
+        ],
+      ),
     );
-    showDialog(barrierDismissible: false,
-      context:context,
-      builder:(BuildContext context){
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
         return alert;
       },
     );
@@ -297,72 +303,92 @@ class _AddCheckPointState extends State<AddCheckPoint> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            new SizedBox(
-              height: 20.0,
+        body: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(-0.5, -0.7),
+                  radius: 3.0,
+                  colors: <Color>[
+                    Colors.white,
+                    Colors.pink.shade200,
+                  ],
+                ),
+              ),
             ),
-            groupImage(),
-            new SizedBox(
-              height: 20.0,
-            ),
-            nameForm(),
-            new SizedBox(
-              height: 30.0,
-            ),
-            FutureBuilder(
-              future: _goToMe(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                print(snapshot.hasData);
-                if (snapshot.hasData == true) {
-                  return showMap();
-                } else {
-                  return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-              },
-            ),
-            new SizedBox(
-              height: 10.0,
+            Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    new SizedBox(
+                      height: 20.0,
+                    ),
+                    groupImage(),
+                    new SizedBox(
+                      height: 20.0,
+                    ),
+                    nameForm(),
+                    new SizedBox(
+                      height: 30.0,
+                    ),
+                    FutureBuilder(
+                      future: _goToMe(),
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                        print(snapshot.hasData);
+                        if (snapshot.hasData == true) {
+                          return showMap();
+                        } else {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      },
+                    ),
+                    new SizedBox(
+                      height: 10.0,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (namePoint == null ) {
-            print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
-            _showDialog('กรุณากรอกข้อมูลให้ครบถ้วน');
-          }else if(_image == null){
-            print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
-            _showDialog('กรุณาเลือกรูปภาพ');
-          }else if((lat == null || lng == null)){
-            print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
-            _showDialog('กรุณาปักหมุด');
-          }
-          else {
-            try{
-              showLoadingDialog(context);
-              uploadImage();
-            }catch(e){
-
-            }
-          }
-        },
-        label: Text(
-          'แจ้งเลย',
-          style: TextStyle(
-            fontSize: 20.0,
-            color: Colors.white,
-            fontFamily: 'Kanit',
-          ),
-        ),
-        icon: Icon(Icons.cloud_upload),
-        backgroundColor: Colors.green,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: FloatingActionButton.extended(
+        onPressed: ()
+    {
+      if (namePoint == null) {
+        print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
+        _showDialog('กรุณากรอกข้อมูลให้ครบถ้วน');
+      } else if (_image == null) {
+        print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
+        _showDialog('กรุณาเลือกรูปภาพ');
+      } else if ((lat == null || lng == null)) {
+        print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
+        _showDialog('กรุณาปักหมุด');
+      } else {
+        try {
+          showLoadingDialog(context);
+          uploadImage();
+        } catch (e) {}
+      }
+    },
+    label: Text(
+    'แจ้งเลย',
+    style: TextStyle(
+    fontSize: 20.0,
+    color: Colors.white,
+    fontFamily: 'Kanit',
+    ),
+    ),
+    icon: Icon(Icons.cloud_upload),
+    backgroundColor: Colors.green,
+    ),
+    floatingActionButtonLocation:
+    FloatingActionButtonLocation
+    .
+    centerFloat
+    ,
     );
   }
 }
