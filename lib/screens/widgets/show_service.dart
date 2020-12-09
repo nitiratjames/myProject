@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 class ShowService extends StatefulWidget {
   @override
@@ -21,20 +22,16 @@ class _ShowServiceState extends State<ShowService> {
   void initMarker(specify, specifyId) async {
     var markerIdVal = specifyId;
     final MarkerId markerId = MarkerId(markerIdVal);
+    print("images/${specify['eventType']}.png");
     final Marker marker = Marker(
       markerId: markerId,
       position: LatLng(specify['lat'], specify['lng']),
-      icon: mapMarker,
+      icon: await BitmapDescriptor.fromAssetImage(ImageConfiguration(),"images/${specify['eventType']}.png"),
+      // icon: await BitmapDescriptor.fromAssetImage(
+      //     ImageConfiguration(), "images/car-crash.png"),
       onTap: () {
         _onMarkerTapped(specify);
       },
-      // infoWindow: InfoWindow(
-      //   title: specify['namePoint'],
-      //   snippet: '12:50:0',
-      //   onTap: (){
-      //     _showDetail('a');
-      //   }
-      // ),
     );
     setState(() {
       markers[markerId] = marker;
@@ -43,12 +40,12 @@ class _ShowServiceState extends State<ShowService> {
 
   getMarkerData() async {
     FirebaseFirestore.instance
-        .collection('checkpoints')
+        .collection('markers')
         .get()
-        .then((myMockDoc) {
-      if (myMockDoc.docs.isNotEmpty) {
-        for (int i = 0; i < myMockDoc.docs.length; i++) {
-          initMarker(myMockDoc.docs[i].data(), myMockDoc.docs[i].id);
+        .then((markersDoc) {
+      if (markersDoc.docs.isNotEmpty) {
+        for (int i = 0; i < markersDoc.docs.length; i++) {
+          initMarker(markersDoc.docs[i].data(), markersDoc.docs[i].id);
         }
       }
     });
@@ -70,7 +67,7 @@ class _ShowServiceState extends State<ShowService> {
 
   @override
   void initState() {
-    setCustomMarkers();
+    // setCustomMarkers();
     getMarkerData();
     setUpTimedFetch();
     super.initState();
@@ -97,7 +94,7 @@ class _ShowServiceState extends State<ShowService> {
     )));
   }
 
-  void _onMarkerTapped(specify) {
+  void _onMarkerTapped(marker) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -110,9 +107,9 @@ class _ShowServiceState extends State<ShowService> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.all(10.0),
+                    padding: EdgeInsets.all(5.0),
                     child: Image.network(
-                      specify['imageUrl'],
+                      marker['imageUrl'],
                       loadingBuilder: (BuildContext context, Widget child,
                           ImageChunkEvent loadingProgress) {
                         if (loadingProgress == null) return child;
@@ -120,7 +117,7 @@ class _ShowServiceState extends State<ShowService> {
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
                                 ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes
+                                    loadingProgress.expectedTotalBytes
                                 : null,
                           ),
                         );
@@ -133,18 +130,17 @@ class _ShowServiceState extends State<ShowService> {
                     color: Colors.white,
                     child: SizedBox.expand(
                       child: Padding(
-                        padding: const EdgeInsets.all(15.0),
+                        padding: const EdgeInsets.all(10.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             RaisedButton.icon(
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               shape: RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(5.0))),
                               label: Text(
-                                'สร้างโดย : ${specify['createdName']}',
+                                'สร้างโดย : ${marker['createdName']}',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontFamily: 'Kanit',
@@ -159,7 +155,7 @@ class _ShowServiceState extends State<ShowService> {
                               color: Colors.lightGreen,
                             ),
                             Text(
-                              'บริเวณ : ${specify['namePoint']}',
+                              'บริเวณ : ${marker['namePoint']}',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16.0,
@@ -169,7 +165,7 @@ class _ShowServiceState extends State<ShowService> {
                               // textAlign: TextAlign.left,
                             ),
                             Text(
-                              'เวลา : ${new DateFormat("dd-MM-yyyy hh:mm").format(specify['createdOn'].toDate())}',
+                              'เวลา : ${new DateFormat("dd-MM-yyyy hh:mm").format(marker['createdOn'].toDate())}',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 16.0,
@@ -200,17 +196,21 @@ class _ShowServiceState extends State<ShowService> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: GoogleMap(
-        myLocationEnabled: true,
-        markers: Set<Marker>.of(markers.values),
-        mapType: MapType.terrain,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(18.7768121, 98.9860395),
-          zoom: 12.0,
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: GoogleMap(
+          myLocationEnabled: true,
+          markers: Set<Marker>.of(markers.values),
+          mapType: MapType.terrain,
+          initialCameraPosition: CameraPosition(
+            target: LatLng(18.7768121, 98.9860395),
+            zoom: 12.0,
+          ),
+          onMapCreated: (GoogleMapController controller) {
+            _controller.complete(controller);
+          },
         ),
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _goToMe,

@@ -96,9 +96,9 @@ class _ServiceState extends State<Service> {
 
   Widget showText() {
     return Text(
-      'มีด่านบอกด้วย',
+      'บอกด้วย เชียงใหม่',
       style: TextStyle(
-        fontSize: 35.0,
+        fontSize: 30.0,
         fontWeight: FontWeight.bold,
         color: Colors.black,
         fontFamily: 'Kanit',
@@ -154,7 +154,7 @@ class _ServiceState extends State<Service> {
         size: 35.0,
       ),
       title: Text(
-        'แจ้งด่านตรวจ',
+        'แจ้งเหตุ',
         style: TextStyle(
           fontSize: 18.0,
           fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class _ServiceState extends State<Service> {
       ),
       onTap: () {
         setState(() {
-          currentPage = 'แจ้งด่านตรวจ';
+          currentPage = 'แจ้งเหตุ';
           currentWidget = AddCheckPoint();
         });
         Navigator.of(context).pop();

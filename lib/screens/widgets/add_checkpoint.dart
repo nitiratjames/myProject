@@ -10,78 +10,36 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+// import 'package:google_maps_flutter_platform_interface/src/types/marker_updates.dart';
 
 class AddCheckPoint extends StatefulWidget {
   @override
   _AddCheckPointState createState() => _AddCheckPointState();
 }
 
+class Item {
+  const Item(this.name, this.icon);
+
+  final String name;
+  final Icon icon;
+}
+
 class _AddCheckPointState extends State<AddCheckPoint> {
+  Map<MarkerId, Marker> _markers = <MarkerId, Marker>{};
+  int _markerIdCounter = 0;
+  Completer<GoogleMapController> _mapController = Completer();
+  LocationData currentLocation;
   File _image;
   String imageUrl;
   double lat, lng;
   String namePoint;
-
-  Completer<GoogleMapController> _controller = Completer();
+  Item selectedItemEvent;
+  String selectedEvent;
 
   @override
   void initState() {
+    getCurrentLocation();
     super.initState();
-    _goToMe();
-  }
-
-  Future<LocationData> findLocationData() async {
-    Location location = Location();
-    try {
-      return location.getLocation();
-    } catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        // Permission denied
-      }
-      return null;
-    }
-  }
-
-  Future<bool> _goToMe() async {
-    LocationData locationData = await findLocationData();
-    lat = locationData.latitude;
-    lng = locationData.longitude;
-    return true;
-  }
-
-  Set<Marker> myMarker() {
-    return <Marker>[
-      Marker(
-        onTap: () {
-          print('Tapped');
-        },
-        onDragEnd: ((newPosition) {
-          lat = newPosition.latitude;
-          lng = newPosition.longitude;
-        }),
-        draggable: true,
-        markerId: MarkerId('myMap'),
-        position: LatLng(lat, lng),
-      )
-    ].toSet();
-  }
-
-  Container showMap() {
-    LatLng latLng = LatLng(lat, lng);
-    CameraPosition cameraPosition = CameraPosition(
-      target: latLng,
-      zoom: 14.0,
-    );
-    return Container(
-      height: 400,
-      child: GoogleMap(
-        myLocationEnabled: true,
-        mapType: MapType.terrain,
-        initialCameraPosition: cameraPosition,
-        onMapCreated: (controller) {},
-        markers: myMarker(),
-      ),
-    );
   }
 
   _imgFromCamera() async {
@@ -130,13 +88,11 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         });
   }
 
-  Widget nameForm() =>
-      Row(
+  Widget nameForm() => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 400.0,
-            padding: const EdgeInsets.all(5.0),
+            width: 300.0,
             child: TextField(
               onChanged: (value) => namePoint = value.trim(),
               decoration: InputDecoration(
@@ -155,10 +111,82 @@ class _AddCheckPointState extends State<AddCheckPoint> {
                     color: Colors.red,
                     fontSize: 16.0,
                   )),
-              maxLines: 2,
+              maxLines: 4,
               keyboardType: TextInputType.text,
             ),
           )
+        ],
+      );
+
+  List<Item> events = <Item>[
+    const Item(
+        'ด่านตรวจ',
+        Icon(
+          Icons.android,
+          color: Colors.red,
+        )),
+    const Item(
+        'อุบัติเหตุ',
+        Icon(
+          Icons.local_hospital,
+          color: Colors.red,
+        )),
+    const Item(
+        'รถติด',
+        Icon(
+          Icons.directions_car,
+          color: Colors.red,
+        )),
+    const Item(
+        'อื่นๆ',
+        Icon(
+          Icons.list_alt,
+          color: Colors.red,
+        )),
+  ];
+
+  Widget eventType() => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DropdownButton<Item>(
+            iconSize: 50.0,
+            style: TextStyle(
+              fontFamily: 'Kanit',
+              color: Colors.black,
+              fontSize: 20.0,
+            ),
+            hint: Text(
+              "เลือกประเภทเหตุการณ์",
+            ),
+            value: selectedItemEvent,
+            onChanged: (Item Value) {
+              setState(() {
+                selectedEvent = Value.name;
+                selectedItemEvent = Value;
+              });
+            },
+            items: events.map((Item event) {
+              return DropdownMenuItem<Item>(
+                value: event,
+                child: Row(
+                  children: <Widget>[
+                    event.icon,
+                    SizedBox(
+                      width: 50,
+                    ),
+                    Text(
+                      event.name,
+                      style: TextStyle(
+                        fontFamily: 'Kanit',
+                        color: Colors.black,
+                        fontSize: 20.0,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ],
       );
 
@@ -170,24 +198,24 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         },
         child: _image != null
             ? ClipRRect(
-          child: Image.file(
-            _image,
-            width: 400,
-            height: 300,
-            fit: BoxFit.fitWidth,
-          ),
-        )
+                child: Image.file(
+                  _image,
+                  width: 400,
+                  height: 300,
+                  fit: BoxFit.fitWidth,
+                ),
+              )
             : Container(
-          decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(50)),
-          width: 100,
-          height: 100,
-          child: Icon(
-            Icons.camera_alt,
-            color: Colors.grey[800],
-          ),
-        ),
+                decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(50)),
+                width: 100,
+                height: 100,
+                child: Icon(
+                  Icons.camera_alt,
+                  color: Colors.grey[800],
+                ),
+              ),
       ),
     );
   }
@@ -243,7 +271,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
         //Upload to Firebase
         var snapshot = await _storage
             .ref()
-            .child('images/checkpoint_${lat}_${lng}')
+            .child('images/markers_${lat}_${lng}')
             .putFile(file);
         var downloadUrl = await snapshot.ref.getDownloadURL();
         setState(() {
@@ -259,12 +287,13 @@ class _AddCheckPointState extends State<AddCheckPoint> {
   }
 
   Future<void> addCheckpoint() async {
-    CollectionReference checkpoints =
-    FirebaseFirestore.instance.collection('checkpoints');
+    CollectionReference markers =
+        FirebaseFirestore.instance.collection('markers');
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     FirebaseAuth auth = FirebaseAuth.instance;
     String uid = auth.currentUser.uid.toString();
-    checkpoints.doc().set({
+    markers.doc().set({
+      'eventType': selectedEvent,
       'namePoint': namePoint,
       'imageUrl': imageUrl,
       'lat': lat,
@@ -276,7 +305,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
     });
 
     MaterialPageRoute materialPageRoute =
-    MaterialPageRoute(builder: (BuildContext context) => Service());
+        MaterialPageRoute(builder: (BuildContext context) => Service());
     Navigator.of(context)
         .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
   }
@@ -300,95 +329,158 @@ class _AddCheckPointState extends State<AddCheckPoint> {
     );
   }
 
+  Future<LocationData> getCurrentLocation() async {
+    Location location = Location();
+    try {
+      return await location.getLocation();
+    } on PlatformException catch (e) {
+      if (e.code == 'PERMISSION_DENIED') {
+        // Permission denied
+      }
+      return null;
+    }
+  }
+
+  void _onMapCreated(GoogleMapController controller) async {
+    _mapController.complete(controller);
+    currentLocation = await getCurrentLocation();
+    if (currentLocation != null) {
+      lat = currentLocation.latitude;
+      lng = currentLocation.longitude;
+      MarkerId markerId = MarkerId(_markerIdVal());
+      LatLng position =
+          LatLng(currentLocation.latitude, currentLocation.longitude);
+      Marker marker = Marker(
+        markerId: markerId,
+        position: position,
+        draggable: false,
+      );
+      setState(() {
+        _markers[markerId] = marker;
+      });
+
+      // Future.delayed(Duration(seconds: 1), () async {
+      GoogleMapController controller = await _mapController.future;
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: position,
+            zoom: 16.0,
+          ),
+        ),
+      );
+      // });
+    }
+  }
+
+  String _markerIdVal({bool increment = false}) {
+    String val = 'marker_id_$_markerIdCounter';
+    if (increment) _markerIdCounter++;
+    return val;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: const Alignment(-0.5, -0.7),
-                  radius: 3.0,
-                  colors: <Color>[
-                    Colors.white,
-                    Colors.pink.shade200,
-                  ],
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      new SizedBox(
+                        height: 20.0,
+                      ),
+                      groupImage(),
+                      new SizedBox(
+                        height: 20.0,
+                      ),
+                      eventType(),
+                      new SizedBox(
+                        height: 30.0,
+                      ),
+                      nameForm(),
+                      new SizedBox(
+                        height: 30.0,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    new SizedBox(
-                      height: 20.0,
-                    ),
-                    groupImage(),
-                    new SizedBox(
-                      height: 20.0,
-                    ),
-                    nameForm(),
-                    new SizedBox(
-                      height: 30.0,
-                    ),
-                    FutureBuilder(
-                      future: _goToMe(),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        print(snapshot.hasData);
-                        if (snapshot.hasData == true) {
-                          return showMap();
-                        } else {
-                          return Center(
-                            child: CircularProgressIndicator(),
+              Expanded(
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: GoogleMap(
+                      markers: Set<Marker>.of(_markers.values),
+                      onMapCreated: _onMapCreated,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(18.7768121, 98.9860395),
+                        zoom: 10.0,
+                      ),
+                      myLocationEnabled: true,
+                      onCameraMove: (CameraPosition position) {
+                        if(_markers.length > 0) {
+                          MarkerId markerId = MarkerId(_markerIdVal());
+                          Marker marker = _markers[markerId];
+                          Marker updatedMarker = marker.copyWith(
+                            positionParam: position.target,
                           );
+                          setState(() {
+                            _markers[markerId] = updatedMarker;
+                            lat = position.target.latitude;
+                            lng = position.target.longitude;
+                          });
                         }
                       },
                     ),
-                    new SizedBox(
-                      height: 10.0,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+                  ),
+              )
+            ],
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          print(selectedEvent);
+
+          if (_image == null) {
+            print(
+                'if namePoint : $namePoint _image:$_image lat:$lat lng:$lng selected event:$selectedEvent');
+            _showDialog('กรุณาเลือกรูปภาพ');
+          } else if (selectedEvent == null) {
+            print(
+                'if namePoint : $namePoint _image:$_image lat:$lat lng:$lng selected event:$selectedEvent');
+            _showDialog('กรุณาเลือกประเภทเหตุการณ์');
+          } else if (namePoint == null) {
+            print(
+                'if namePoint : $namePoint _image:$_image lat:$lat lng:$lng selected event:$selectedEvent');
+            _showDialog('กรุณากรอกชื่อบริเวณ');
+          } else if ((lat == null || lng == null)) {
+            print(
+                'if namePoint : $namePoint _image:$_image lat:$lat lng:$lng selected event:$selectedEvent');
+            _showDialog('กรุณาปักหมุด');
+          } else {
+            try {
+              showLoadingDialog(context);
+              uploadImage();
+            } catch (e) {}
+          }
+        },
+        label: Text(
+          'แจ้งเลย',
+          style: TextStyle(
+            fontSize: 20.0,
+            color: Colors.white,
+            fontFamily: 'Kanit',
+          ),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-        onPressed: ()
-    {
-      if (namePoint == null) {
-        print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
-        _showDialog('กรุณากรอกข้อมูลให้ครบถ้วน');
-      } else if (_image == null) {
-        print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
-        _showDialog('กรุณาเลือกรูปภาพ');
-      } else if ((lat == null || lng == null)) {
-        print('if namePoint : $namePoint _image:$_image lat:$lat lng:$lng');
-        _showDialog('กรุณาปักหมุด');
-      } else {
-        try {
-          showLoadingDialog(context);
-          uploadImage();
-        } catch (e) {}
-      }
-    },
-    label: Text(
-    'แจ้งเลย',
-    style: TextStyle(
-    fontSize: 20.0,
-    color: Colors.white,
-    fontFamily: 'Kanit',
-    ),
-    ),
-    icon: Icon(Icons.cloud_upload),
-    backgroundColor: Colors.green,
-    ),
-    floatingActionButtonLocation:
-    FloatingActionButtonLocation
-    .
-    centerFloat
-    ,
+        icon: Icon(Icons.cloud_upload),
+        backgroundColor: Colors.green,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

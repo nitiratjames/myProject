@@ -79,7 +79,7 @@ class _HomeState extends State<Home> {
 
   Widget showText() {
     return Text(
-      'มีด่านบอกด้วย',
+      'บอกด้วย เชียงใหม่',
       style: TextStyle(
         fontSize: 35.0,
         fontWeight: FontWeight.bold,
