@@ -61,8 +61,10 @@ flutter:
   assets:
     - images/logo.gif
     - images/police_logo.gif
-    - images/marker.png
+    - images/checkpoint.png
     - images/accident.png
+    - images/traffic_jam.png
+    - images/other.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -5,7 +5,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:toggle_switch/toggle_switch.dart';
 
 class ShowService extends StatefulWidget {
   @override
@@ -27,8 +26,6 @@ class _ShowServiceState extends State<ShowService> {
       markerId: markerId,
       position: LatLng(specify['lat'], specify['lng']),
       icon: await BitmapDescriptor.fromAssetImage(ImageConfiguration(),"images/${specify['eventType']}.png"),
-      // icon: await BitmapDescriptor.fromAssetImage(
-      //     ImageConfiguration(), "images/car-crash.png"),
       onTap: () {
         _onMarkerTapped(specify);
       },

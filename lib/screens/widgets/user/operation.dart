@@ -17,6 +17,13 @@ Future<void> editStatus(bool _isActive,String id) async {
       .update({"isActive": !_isActive});
 }
 
+Future<void> toggleStatusCreatMarker(bool _createMarker,String id) async {
+  await FirebaseFirestore.instance
+      .collection("users")
+      .doc(id)
+      .update({"createMarker": !_createMarker});
+}
+
 Future<void> deleteUser(DocumentSnapshot doc) async {
   await FirebaseFirestore.instance
       .collection("users")

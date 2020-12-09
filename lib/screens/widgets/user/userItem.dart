@@ -10,6 +10,7 @@ class UserItem extends StatefulWidget {
   final String role;
   final String id;
   final bool isActive;
+  final bool createMarker;
   final DocumentSnapshot documentSnapshot;
 
   UserItem({
@@ -20,6 +21,7 @@ class UserItem extends StatefulWidget {
     @required this.username,
     @required this.createdOn,
     @required this.isActive,
+    @required this.createMarker,
   });
 
   @override
@@ -27,6 +29,7 @@ class UserItem extends StatefulWidget {
 }
 
 class _UserItemState extends State<UserItem> {
+  // bool status = false;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -35,82 +38,117 @@ class _UserItemState extends State<UserItem> {
         width: double.infinity,
         child: Row(
           children: <Widget>[
-            // Container(
-            //   height: 100,
-            //   width: 150,
-            //   child: ClipRRect(
-            //     borderRadius: BorderRadius.circular(10),
-            //     // child: Image.network(
-            //     //   widget.imageUrl,
-            //     //   fit: BoxFit.cover,
-            //     // ),
-            //   ),
-            // ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Row(
-                    children: [
-                      Column(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text(
-                              widget.username,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 25,
-                                fontFamily: 'Kanit',
+            Container(
+              height: 50,
+              width: 50,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Icon(
+                  Icons.person,
+                  size: 50.0,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: [
+                        Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                widget.username,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 25,
+                                  fontFamily: 'Kanit',
+                                ),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            child: Text("${widget.email}",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontFamily: 'Kanit',
-                                )),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text("${widget.email}",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontFamily: 'Kanit',
+                                  )),
+                            )
+                          ],
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      editStatus(widget.isActive, widget.id);
+                    },
+                    icon: widget.isActive
+                        ? Icon(
+                            Icons.clear,
+                            color: Colors.red,
+                            size: 40.0,
                           )
-                        ],
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                      ),
-                      Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 70.0),
+                        : Icon(
+                            Icons.done,
+                            size: 40.0,
+                            color: Colors.greenAccent,
                           ),
-                          IconButton(
-                            onPressed: () {
-                              editStatus(widget.isActive, widget.id);
-                            },
-                            icon: widget.isActive
-                                ? Icon(
-                                    Icons.clear,
-                                    color: Colors.red,
-                                  )
-                                : Icon(
-                                    Icons.done,
-                                    color: Colors.greenAccent,
-                                  ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              deleteUser(widget.documentSnapshot);
-                            },
-                            icon: Icon(
-                              Icons.delete,
-                              color: Colors.redAccent,
-                            ),
-                          ),
-                        ],
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Switch(
+                        activeColor: Colors.lightGreenAccent,
+                        value: widget.createMarker,
+                        onChanged: (val) {
+                          toggleStatusCreatMarker(widget.createMarker, widget.id);
+                        },
                       ),
                     ],
                   ),
+                  // Container(
+                  //   width: 80.0,
+                  //   child: RaisedButton(
+                  //     onPressed: () {},
+                  //     child: Text(
+                  //       '${widget.role}',
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontFamily: 'Kanit',
+                  //       ),
+                  //     ),
+                  //     textColor: Colors.white,
+                  //     splashColor: Colors.red,
+                  //     color: Colors.lightGreen,
+                  //   ),
+                  // ),
+                  // IconButton(
+                  //   onPressed: () {
+                  //     deleteUser(widget.documentSnapshot);
+                  //   },
+                  //   icon: Icon(
+                  //     Icons.delete,
+                  //     size: 40.0,
+                  //     color: Colors.redAccent,
+                  //   ),
+                  // ),
                 ],
               ),
             ),

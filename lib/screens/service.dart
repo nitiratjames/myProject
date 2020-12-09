@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:checkpoint/screens/widgets/show_service.dart';
 import 'package:checkpoint/screens/widgets/add_checkpoint.dart';
 import 'package:checkpoint/screens/widgets/user_manage.dart';
@@ -13,12 +15,17 @@ class Service extends StatefulWidget {
 
 class _ServiceState extends State<Service> {
   String login = null, userRole = null;
+  bool isCreateMarker;
+  bool isActive;
+  bool oldIsCreateMarker;
+  bool oldIsActive;
   String currentPage = 'หน้าหลัก';
   Widget currentWidget = ShowService();
 
   @override
   void initState() {
     findUser();
+    // userFetch();
     super.initState();
   }
 
@@ -34,16 +41,25 @@ class _ServiceState extends State<Service> {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = await firebaseAuth.currentUser;
     final DocumentReference document =
-        Firestore.instance.collection("users").doc(user.uid);
+        FirebaseFirestore.instance.collection("users").doc(user.uid);
     await document.get().then<dynamic>((DocumentSnapshot snapshot) async {
       setState(() {
         login = user.displayName;
         userRole = snapshot.data()['role'];
-        print(login);
-        print(userRole);
+        isActive = snapshot.data()['isActive'];
+        isCreateMarker = snapshot.data()['createMarker'];
+        print('get user');
+        print("login : $login , userRole : $userRole , isActive : $isActive , isCreateMarker : $isCreateMarker");
       });
     });
   }
+
+  // userFetch() {
+  //   Timer.periodic(Duration(minutes: 1), (timer) {
+  //       findUser();
+  //       print('userFetch');
+  //   });
+  // }
 
   Future<void> processingSignOut() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
@@ -236,8 +252,8 @@ class _ServiceState extends State<Service> {
         children: [
           showHead(),
           showService(),
-          showAddCheckpoint(),
-          userRole != 'ADMIN' ? Container(): userManage()
+          userRole == 'ADMIN' || isCreateMarker == true ? showAddCheckpoint() : Container(),
+          userRole == 'ADMIN' ? userManage() : Container()
           // userManage(),
         ],
       ),

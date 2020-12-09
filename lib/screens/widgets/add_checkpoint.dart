@@ -10,7 +10,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:google_maps_flutter_platform_interface/src/types/marker_updates.dart';
 
 class AddCheckPoint extends StatefulWidget {
   @override
@@ -18,9 +17,10 @@ class AddCheckPoint extends StatefulWidget {
 }
 
 class Item {
-  const Item(this.name, this.icon);
+  const Item(this.name,this.type, this.icon);
 
   final String name;
+  final String type;
   final Icon icon;
 }
 
@@ -121,24 +121,28 @@ class _AddCheckPointState extends State<AddCheckPoint> {
   List<Item> events = <Item>[
     const Item(
         'ด่านตรวจ',
+        'checkpoint',
         Icon(
-          Icons.android,
+          Icons.local_police,
           color: Colors.red,
         )),
     const Item(
         'อุบัติเหตุ',
+        'accident',
         Icon(
           Icons.local_hospital,
           color: Colors.red,
         )),
     const Item(
         'รถติด',
+        'traffic_jam',
         Icon(
           Icons.directions_car,
           color: Colors.red,
         )),
     const Item(
         'อื่นๆ',
+        'other',
         Icon(
           Icons.list_alt,
           color: Colors.red,
@@ -161,7 +165,7 @@ class _AddCheckPointState extends State<AddCheckPoint> {
             value: selectedItemEvent,
             onChanged: (Item Value) {
               setState(() {
-                selectedEvent = Value.name;
+                selectedEvent = Value.type;
                 selectedItemEvent = Value;
               });
             },
@@ -382,70 +386,93 @@ class _AddCheckPointState extends State<AddCheckPoint> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      new SizedBox(
-                        height: 20.0,
-                      ),
-                      groupImage(),
-                      new SizedBox(
-                        height: 20.0,
-                      ),
-                      eventType(),
-                      new SizedBox(
-                        height: 30.0,
-                      ),
-                      nameForm(),
-                      new SizedBox(
-                        height: 30.0,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
+      body: FutureBuilder(
+        future: getCurrentLocation(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          print(snapshot.hasData);
+          if (snapshot.hasData == true) {
+            return Column(
+              children: <Widget>[
+                Expanded(
+                  flex: 1,
                   child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: GoogleMap(
-                      markers: Set<Marker>.of(_markers.values),
-                      onMapCreated: _onMapCreated,
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(18.7768121, 98.9860395),
-                        zoom: 10.0,
+                    color: Colors.white70,
+                    width: double.infinity,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          new SizedBox(
+                            height: 20.0,
+                          ),
+                          groupImage(),
+                          new SizedBox(
+                            height: 10.0,
+                          ),
+                          eventType(),
+                          new SizedBox(
+                            height: 10.0,
+                          ),
+                          nameForm(),
+                        ],
                       ),
-                      myLocationEnabled: true,
-                      onCameraMove: (CameraPosition position) {
-                        if(_markers.length > 0) {
-                          MarkerId markerId = MarkerId(_markerIdVal());
-                          Marker marker = _markers[markerId];
-                          Marker updatedMarker = marker.copyWith(
-                            positionParam: position.target,
-                          );
-                          setState(() {
-                            _markers[markerId] = updatedMarker;
-                            lat = position.target.latitude;
-                            lng = position.target.longitude;
-                          });
-                        }
-                      },
                     ),
                   ),
-              )
-            ],
-          ),
-        ],
+                ),
+                Expanded(
+                  flex: 1,
+                  child:
+                  ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                      bottomLeft: Radius.circular(30),
+                    ),
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      heightFactor: 0.3,
+                      widthFactor: 2.5,
+                      child:  Container(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height,
+                        child: GoogleMap(
+                          markers: Set<Marker>.of(_markers.values),
+                          onMapCreated: _onMapCreated,
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(18.7768121, 98.9860395),
+                            zoom: 10.0,
+                          ),
+                          myLocationEnabled: true,
+                          onCameraMove: (CameraPosition position) {
+                            if (_markers.length > 0) {
+                              MarkerId markerId = MarkerId(_markerIdVal());
+                              Marker marker = _markers[markerId];
+                              Marker updatedMarker = marker.copyWith(
+                                positionParam: position.target,
+                              );
+                              setState(() {
+                                _markers[markerId] = updatedMarker;
+                                lat = position.target.latitude;
+                                lng = position.target.longitude;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          print(selectedEvent);
-
           if (_image == null) {
             print(
                 'if namePoint : $namePoint _image:$_image lat:$lat lng:$lng selected event:$selectedEvent');
