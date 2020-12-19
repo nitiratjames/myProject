@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:checkpoint/screens/widgets/show_service.dart';
 import 'package:checkpoint/screens/widgets/add_checkpoint.dart';
 import 'package:checkpoint/screens/widgets/user_manage.dart';
+import 'package:checkpoint/screens/widgets/marker_manage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,10 +30,10 @@ class _ServiceState extends State<Service> {
     super.initState();
   }
 
-  Future<bool> checkUser()async{
-    if(login != null && userRole != null){
+  Future<bool> checkUser() async {
+    if (login != null && userRole != null) {
       return true;
-    }else{
+    } else {
       return false;
     }
   }
@@ -49,7 +50,8 @@ class _ServiceState extends State<Service> {
         isActive = snapshot.data()['isActive'];
         isCreateMarker = snapshot.data()['createMarker'];
         print('get user');
-        print("login : $login , userRole : $userRole , isActive : $isActive , isCreateMarker : $isCreateMarker");
+        print(
+            "login : $login , userRole : $userRole , isActive : $isActive , isCreateMarker : $isCreateMarker");
       });
     });
   }
@@ -80,12 +82,12 @@ class _ServiceState extends State<Service> {
   }
 
   Widget showLogin() {
-    return  FutureBuilder(
+    return FutureBuilder(
       future: checkUser(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         print(snapshot.hasData);
         if (snapshot.hasData == true) {
-          return  Column(
+          return Column(
             children: [
               Text(
                 'Login by ${login}',
@@ -225,6 +227,37 @@ class _ServiceState extends State<Service> {
     );
   }
 
+  Widget markerManage() {
+    return ListTile(
+      leading: Icon(
+        Icons.point_of_sale,
+        size: 35.0,
+      ),
+      title: Text(
+        'จัดการโพสต์',
+        style: TextStyle(
+          fontSize: 18.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+          fontFamily: 'Kanit',
+        ),
+      ),
+      subtitle: Text(
+        'เพิ่มข้อมูลเบื่องต้น',
+        style: TextStyle(
+          fontFamily: 'Kanit',
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          currentPage = 'จัดการโพสต์';
+          currentWidget = MarkerManage();
+        });
+        Navigator.of(context).pop();
+      },
+    );
+  }
+
   Widget showHead() {
     return DrawerHeader(
       decoration: BoxDecoration(
@@ -252,8 +285,11 @@ class _ServiceState extends State<Service> {
         children: [
           showHead(),
           showService(),
-          userRole == 'ADMIN' || isCreateMarker == true ? showAddCheckpoint() : Container(),
-          userRole == 'ADMIN' ? userManage() : Container()
+          userRole == 'ADMIN' || isCreateMarker == true
+              ? showAddCheckpoint()
+              : Container(),
+          userRole == 'ADMIN' ? userManage() : Container(),
+          userRole == 'ADMIN' ? markerManage() : Container(),
           // userManage(),
         ],
       ),
