@@ -8,7 +8,6 @@ class MarkerItem extends StatefulWidget {
   final String createdName;
   final String imageUrl;
   final Timestamp createdOn;
-  final String role;
   final String id;
   final bool isActive;
   final String namePoint;
@@ -20,7 +19,6 @@ class MarkerItem extends StatefulWidget {
     @required this.createdName,
     @required this.imageUrl,
     @required this.createdOn,
-    @required this.role,
     @required this.id,
     @required this.isActive,
     @required this.namePoint,
@@ -37,132 +35,41 @@ class _MarkerItemState extends State<MarkerItem> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Container(
-        width: double.infinity,
-        child: Row(
-          children: <Widget>[
-            Container(
-              height: 50,
-              width: 50,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Icon(
-                  Icons.person,
-                  size: 50.0,
-                  color: Colors.black54,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
+      child:Card(
+          color: Colors.white70,
+          child: Column(
+            children: [
+              new Container(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.network(widget.imageUrl)),
+              new Container(
+                padding: const EdgeInsets.all(10.0),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    // Row(
-                    //   children: [
-                    //     Column(
-                    //       children: <Widget>[
-                    //         Padding(
-                    //           padding: const EdgeInsets.only(left: 8.0),
-                    //           child: Text(
-                    //             widget.namePoint,
-                    //             style: TextStyle(
-                    //               fontWeight: FontWeight.bold,
-                    //               color: Colors.white,
-                    //               fontSize: 25,
-                    //               fontFamily: 'Kanit',
-                    //             ),
-                    //           ),
-                    //         ),
-                    //         Padding(
-                    //           padding: const EdgeInsets.only(left: 8.0),
-                    //           child: Text("${widget.createdName}",
-                    //               style: TextStyle(
-                    //                 color: Colors.white,
-                    //                 fontSize: 20,
-                    //                 fontFamily: 'Kanit',
-                    //               )),
-                    //         )
-                    //       ],
-                    //       crossAxisAlignment: CrossAxisAlignment.start,
-                    //     ),
-                    //   ],
-                    // ),
+                  children: [
+                    Text(widget.eventType, style: Theme.of(context).textTheme.title),
+                    Text(widget.createdName,
+                        style: TextStyle(color: Colors.black.withOpacity(0.5))),
+                    Text(widget.namePoint),
                   ],
                 ),
-              ),
-            ),
-            Expanded(
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                  ),
-                  // IconButton(
-                  //   onPressed: () {
-                  //     editStatus(widget.isActive, widget.id);
-                  //   },
-                  //   icon: widget.isActive
-                  //       ? Icon(
-                  //           Icons.clear,
-                  //           color: Colors.red,
-                  //           size: 40.0,
-                  //         )
-                  //       : Icon(
-                  //           Icons.done,
-                  //           size: 40.0,
-                  //           color: Colors.greenAccent,
-                  //         ),
-                  // ),
-                  // Column(
-                  //   mainAxisAlignment: MainAxisAlignment.start,
-                  //   children: <Widget>[
-                  //     Switch(
-                  //       activeColor: Colors.lightGreenAccent,
-                  //       value: widget.createMarker,
-                  //       onChanged: (val) {
-                  //         toggleStatusCreatMarker(widget.createMarker, widget.id);
-                  //       },
-                  //     ),
-                  //   ],
-                  // ),
-                  // Container(
-                  //   width: 80.0,
-                  //   child: RaisedButton(
-                  //     onPressed: () {},
-                  //     child: Text(
-                  //       '${widget.role}',
-                  //       style: TextStyle(
-                  //         color: Colors.white,
-                  //         fontFamily: 'Kanit',
-                  //       ),
-                  //     ),
-                  //     textColor: Colors.white,
-                  //     splashColor: Colors.red,
-                  //     color: Colors.lightGreen,
-                  //   ),
-                  // ),
-                  // IconButton(
-                  //   onPressed: () {
-                  //     deleteMarker(widget.documentSnapshot);
-                  //   },
-                  //   icon: Icon(
-                  //     Icons.delete,
-                  //     size: 40.0,
-                  //     color: Colors.redAccent,
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Colors.grey,
-        ),
-      ),
+              )
+            ],
+            crossAxisAlignment: CrossAxisAlignment.start,
+          )),
+      // Container(
+      //   width: double.infinity,
+      //   child: Row(
+      //     children: <Widget>[
+      //     ],
+      //   ),
+      //   padding: EdgeInsets.all(10),
+      //   decoration: BoxDecoration(
+      //     borderRadius: BorderRadius.circular(10),
+      //     color: Colors.grey,
+      //   ),
+      // ),
     );
   }
 }

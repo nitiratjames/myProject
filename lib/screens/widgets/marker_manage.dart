@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -51,23 +52,21 @@ class _MarkerManageState extends State<MarkerManage> {
                   return !snapshot.hasData
                       ? Center(child: CircularProgressIndicator())
                       : ListView.builder(
-                          itemCount: snapshot.data.docs.length,
-                          itemBuilder: (context, index) {
-                            DocumentSnapshot markers =
-                                snapshot.data.docs[index];
-                            return MarkerItem(
-                              documentSnapshot: markers,
-                              id: markers.id,
-                              eventType: markers['eventType'],
-                              createdName: markers['createdName'],
-                              imageUrl: markers['imageUrl'],
-                              createdOn: markers['createdOn'],
-                              role: markers['role'],
-                              isActive: markers['isActive'],
-                              namePoint: markers['namePoint'],
-                            );
-                          },
-                        );
+                    itemCount: snapshot.data.docs.length,
+                    itemBuilder: (context, index) {
+                      DocumentSnapshot markers = snapshot.data.docs[index];
+                      return MarkerItem(
+                        documentSnapshot: markers,
+                        id: markers.id,
+                        eventType: markers['eventType'],
+                        createdName: markers['createdName'],
+                        imageUrl: markers['imageUrl'],
+                        createdOn: markers['createdOn'],
+                        isActive: markers['isActive'],
+                        namePoint: markers['namePoint'],
+                      );
+                    },
+                  );
                 },
               ),
             ),

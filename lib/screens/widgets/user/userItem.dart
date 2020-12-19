@@ -76,7 +76,7 @@ class _UserItemState extends State<UserItem> {
                               child: Text("${widget.email}",
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: 16,
                                     fontFamily: 'Kanit',
                                   )),
                             )
@@ -123,32 +123,6 @@ class _UserItemState extends State<UserItem> {
                       ),
                     ],
                   ),
-                  // Container(
-                  //   width: 80.0,
-                  //   child: RaisedButton(
-                  //     onPressed: () {},
-                  //     child: Text(
-                  //       '${widget.role}',
-                  //       style: TextStyle(
-                  //         color: Colors.white,
-                  //         fontFamily: 'Kanit',
-                  //       ),
-                  //     ),
-                  //     textColor: Colors.white,
-                  //     splashColor: Colors.red,
-                  //     color: Colors.lightGreen,
-                  //   ),
-                  // ),
-                  // IconButton(
-                  //   onPressed: () {
-                  //     deleteUser(widget.documentSnapshot);
-                  //   },
-                  //   icon: Icon(
-                  //     Icons.delete,
-                  //     size: 40.0,
-                  //     color: Colors.redAccent,
-                  //   ),
-                  // ),
                 ],
               ),
             ),
