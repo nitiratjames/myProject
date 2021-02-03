@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ShowService extends StatefulWidget {
   @override
@@ -25,7 +26,8 @@ class _ShowServiceState extends State<ShowService> {
     final Marker marker = Marker(
       markerId: markerId,
       position: LatLng(specify['lat'], specify['lng']),
-      icon: await BitmapDescriptor.fromAssetImage(ImageConfiguration(),"images/${specify['eventType']}.png"),
+      icon: await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), "images/${specify['eventType']}.png"),
       onTap: () {
         _onMarkerTapped(specify);
       },
@@ -36,10 +38,7 @@ class _ShowServiceState extends State<ShowService> {
   }
 
   getMarkerData() async {
-    FirebaseFirestore.instance
-        .collection('markers')
-        .get()
-        .then((markersDoc) {
+    FirebaseFirestore.instance.collection('markers').get().then((markersDoc) {
       if (markersDoc.docs.isNotEmpty) {
         for (int i = 0; i < markersDoc.docs.length; i++) {
           initMarker(markersDoc.docs[i].data(), markersDoc.docs[i].id);
@@ -103,22 +102,15 @@ class _ShowServiceState extends State<ShowService> {
             child: Column(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: EdgeInsets.all(5.0),
-                    child: Image.network(
-                      marker['imageUrl'],
-                      loadingBuilder: (BuildContext context, Widget child,
-                          ImageChunkEvent loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes
-                                : null,
-                          ),
-                        );
-                      },
+                  child: Center(
+                    // padding: EdgeInsets.all(8.0),
+                    child: CachedNetworkImage(
+                      imageUrl: marker['imageUrl'],
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) =>
+                              CircularProgressIndicator(
+                                  value: downloadProgress.progress),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
                     ),
                   ),
                 ),

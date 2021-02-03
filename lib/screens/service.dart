@@ -230,7 +230,7 @@ class _ServiceState extends State<Service> {
   Widget markerManage() {
     return ListTile(
       leading: Icon(
-        Icons.point_of_sale,
+        Icons.assignment_turned_in_outlined,
         size: 35.0,
       ),
       title: Text(
@@ -243,7 +243,7 @@ class _ServiceState extends State<Service> {
         ),
       ),
       subtitle: Text(
-        'เพิ่มข้อมูลเบื่องต้น',
+        'ตรวจสอบข้อมูล',
         style: TextStyle(
           fontFamily: 'Kanit',
         ),
